@@ -12,6 +12,6 @@ __pycache__/
 *$.py.class
 
 # Avoid sending private information
-configs.py
+*/configs.py
 
 !/.gitignore
