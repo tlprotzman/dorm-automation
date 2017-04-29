@@ -37,7 +37,8 @@ def main():
 			client.disconnect()
 			sys.exit()
 		elif command == "pixel":
-			# pixel(client)
+			pixel(client)
+		elif command == "rainbow":
 			rainbow(client)
 		elif command == "pulse":
 			speed = float(input("How fast? (delay between steps) "))
@@ -47,6 +48,8 @@ def main():
 			for i in range(300):
 				client.sendPixel(i, (h, s, v))
 				time.sleep(speed)
+		elif command == "striptest":
+			randomColors(client)
 
 
 
@@ -93,6 +96,9 @@ def rainbow(client):
 		for i in range(255):
 			client.sendColor((i, 255, 255))
 			time.sleep(0.05)
+
+def randomColors(client):
+	client.sendRandomStrip()
 
 
 if __name__ == "__main__":

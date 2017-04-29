@@ -1,4 +1,5 @@
 import logging
+import random
 import socket
 
 class clientSocket:
@@ -44,25 +45,20 @@ class clientSocket:
 		self.send(brightness)
 
 
-	def ensureSize(self, message, maximum, length):
-		message = str(message)
-		if float(message) > maximum:
-			message = str(maximum)
-		while len(message) < length:
-			message = '0' + message
-		return message
+	def sendRandomStrip(self):
+		number = 300
+		self.send(7)
+		num = self.ensureSize(number, 999, 3)
+		self.send(num)
+		for i in range(number):
+			pixel = self.ensureSize(i, 999, 3)
+			self.send(pixel)
+			color = random.randint(0, 256)
+			color = self.ensureSize(color, 255, 3)
+			self.send(color)
+			for j in range(2):
+				self.send(255)
 
-
-	def getColor(self):
-		self.send(3)
-		h = self.sock.recv(3)
-		s = self.sock.recv(3)
-		v = self.sock.recv(3)
-		return (h, v, s)
-
-	def getBrightness(self):
-		self.send(4)
-		return self.sock.recv(3)
 
 	def sendRandom(self, times, time):
 		self.send(5)
@@ -82,3 +78,24 @@ class clientSocket:
 		for var in color:
 			var = self.ensureSize(var, 255, 3)
 			self.send(var)
+
+
+	def ensureSize(self, message, maximum, length):
+		message = str(message)
+		if float(message) > maximum:
+			message = str(maximum)
+		while len(message) < length:
+			message = '0' + message
+		return message
+
+
+	def getColor(self):
+		self.send(3)
+		h = self.sock.recv(3)
+		s = self.sock.recv(3)
+		v = self.sock.recv(3)
+		return (h, v, s)
+
+	def getBrightness(self):
+		self.send(4)
+		return self.sock.recv(3)

@@ -67,7 +67,7 @@ def authenticate(clientSocket):
 	# Sets a short timeout to force quick authentication 
 	clientSocket.settimeout(4)
 	auth = ''
-	try:	# Attempts to recieve a 64 bit hash from the client
+	try:	# Attempts to receive a 64 bit hash from the client
 		auth = clientSocket.recv(64).decode()
 	except:
 		pass
@@ -111,7 +111,7 @@ def clientThread(clientSocket, lights):
 		data = clientSocket.recv(1).decode()		# Receives the code for the desired command
 		logging.debug("received: " + str(data))
 		if data == "1":
-			color = recieveColor(clientSocket)
+			color = receiveColor(clientSocket)
 			processCommands(lights, ("color", color))
 		elif data == "2":
 			brightness = clientSocket.recv(3).decode()
@@ -127,18 +127,21 @@ def clientThread(clientSocket, lights):
 			send(ensureSize(str(lights.getBrightness()), 255, 3), clientSocket)
 		elif data == "5":
 			logging.debug("Starting random sequence")
-			randomInfo = recieveRandom(clientSocket)
+			randomInfo = receiveRandom(clientSocket)
 			processCommands(lights, ("random", randomInfo))
 		elif data == "6":
 			logging.debug("Receiving individual pixel")
-			recievePixel(lights, clientSocket)
+			receivePixel(lights, clientSocket)
+		elif data == "7":
+			logging.debug("Receiving entire strip")
+			receiveStrip(lights, clientSocket)
 		if not data:
 			logging.debug("Closing thread")
 			clientSocket.close()
 			break
 
 
-def recieveColor(clientSocket):
+def receiveColor(clientSocket):
 	logging.debug("Receiving color...")
 	data = list()
 	for i in range(3):
@@ -148,7 +151,7 @@ def recieveColor(clientSocket):
 	return color
 
 
-def recieveRandom(clientSocket):
+def receiveRandom(clientSocket):
 	length = int(clientSocket.recv(2))
 	times = int(clientSocket.recv(length))
 	length = int(clientSocket.recv(2))
@@ -156,13 +159,24 @@ def recieveRandom(clientSocket):
 	logging.debug("Received random with iterations " + str(times) + " and delay " + str(time))
 	return (times, time)
 
-def recievePixel(lights, clientSocket):
+def receivePixel(lights, clientSocket):
 	logging.debug("Setting pixel")
 	pixel = int(clientSocket.recv(3))
-	color = recieveColor(clientSocket)
+	color = receiveColor(clientSocket)
 	logging.debug("Setting pixel " + str(pixel) + " to color " + str(color))
 	lights.setPixel(pixel, color)
 
+def receiveStrip(lights, clientSocket):
+	strip = dict()
+	numPixles = int(clientSocket.recv(3))
+	logging.debug("Receiving " + str(numPixles) + " pixels")
+	for i in range(numPixles):
+		pixel = int(clientSocket.recv(3))
+		logging.debug("received pixel " + str(pixel))
+		color = receiveColor(clientSocket)
+		strip[pixel] = color
+		logging.debug("Pixel " + str(pixel) + " assigned to color " + str(color))
+	lights.sendStrand(strip)
 
 def processCommands(lights, commands):
 	if not commands:

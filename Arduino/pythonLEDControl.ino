@@ -3,9 +3,10 @@
 bool listen(String& command);
 void setColor();
 void setBrightness();
+bool setPixel();
+void setStrip();
 void getBrightness();
 CRGB getColors();
-void setPixel();
 
 FASTLED_USING_NAMESPACE
 
@@ -18,7 +19,7 @@ CRGB leds[NUM_LEDS];
 
 void setup() {
 	FastLED.addLeds<LED_TYPE,DATA_PIN,COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
-	Serial.begin(1000000);
+	Serial.begin(9600);
 	Serial.println("Serial port open, listening...");
 }
 
@@ -29,8 +30,12 @@ void loop() {
 		setColor();
 	else if (command == "SETBRIGHTNESS")
 		setBrightness();
-	else if (command == "SETPIXEL")
+	else if (command == "SETPIXELSHOW") {
 		setPixel();
+		FastLED.show();
+	}
+	else if (command == "SETSTRIP")
+		setStrip();
 }
 
 void setColor() {
@@ -50,6 +55,32 @@ void setBrightness() {
 	FastLED.show();
 }
 
+bool setPixel() {
+	String command;
+	while (!listen(command)) {}
+	if (command == "SHOW")
+		return true;
+	unsigned pixle = atoi(command.c_str());
+	// Serial.println("Got pixel:");
+	// while(!listen(command)) {}
+	// unsigned h = atoi(command.substring(0, 3).c_str());
+	// unsigned s = atoi(command.substring(3, 6).c_str());
+	// unsigned v = atoi(command.substring(6, 9).c_str());
+	// Serial.println('!');
+	// Serial.println(h);
+	// Serial.println(s);
+	// Serial.println(v);
+	CRGB color = getColors();
+	
+	leds[pixle] = CHSV(h, s, v);//color;
+	return false;
+}
+
+void setStrip() {
+	String command;
+	while (!setPixel()) {}
+	FastLED.show();
+}
 
 CRGB getColors() {
 	uint8_t colors[3];
@@ -61,6 +92,7 @@ CRGB getColors() {
 			currentColor = 255;
 		colors[i] = currentColor;
 	}
+	// Serial.println(str("Got color ")+str(colors[0])+str(colors[1])+str(colors[2]));
 	return CHSV(colors[0], colors[1], colors[2]);
 }
 
@@ -79,13 +111,5 @@ bool listen(String& message) {
 	}
 }
 
-void setPixel() {
-	String command;
-	while (!listen(command)) {}
-	unsigned pixle = atoi(command.c_str());
-	CRGB color = getColors();
-	leds[pixle] = color;
-	FastLED.show();
-}
 
 
