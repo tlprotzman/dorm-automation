@@ -72,7 +72,7 @@ bool setPixel() {
 	// Serial.println(v);
 	CRGB color = getColors();
 	
-	leds[pixle] = CHSV(h, s, v);//color;
+	leds[pixle] = color;
 	return false;
 }
 

@@ -92,9 +92,11 @@ class lightStrip(): #1000000
 
 	# Gets the current brightness
 	def getBrightness(self):
+		logging.debug("Current brightness is " + str(self.brightness))
 		return self.brightness
 
 	def getColor(self):
+		logging.debug("Current color is " + str(self.color))
 		return self.color
 
 	# Prompts for input from the user, and sets and sends the brightness

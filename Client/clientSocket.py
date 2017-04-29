@@ -1,4 +1,5 @@
 import logging
+import sys
 import random
 import socket
 
@@ -17,6 +18,15 @@ class clientSocket:
 
 	def disconnect(self):
 		self.send(0)
+
+
+	def verifyConnected(self):
+		connected = self.sock.recv(1).decode()
+		if connected == "0":
+			print("Failed to connect.  Exiting...")
+			self.sock.close()
+			sys.exit(1)
+		print("Successfully connected!")
 
 
 	def send(self, message):

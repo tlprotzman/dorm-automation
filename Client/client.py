@@ -59,8 +59,7 @@ def authenticate(client):
 	hasher.update(token.encode())
 	hashed = hasher.hexdigest()
 	client.send(hashed)
-
-
+	client.verifyConnected()
 
 def color(client, hue=False):
 	h = input("Enter a H value: ")
