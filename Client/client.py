@@ -50,6 +50,12 @@ def main():
 				time.sleep(speed)
 		elif command == "striptest":
 			randomColors(client)
+		elif command == "color-fade":
+			colorFade(client)
+		elif command == "brightness-fade":
+			brightnessFade(client)
+		elif command == "off":
+			off(client)
 
 
 
@@ -98,6 +104,33 @@ def rainbow(client):
 
 def randomColors(client):
 	client.sendRandomStrip()
+
+def colorFade(client):
+	color = input("Enter H value: ")
+	currentColor = int(client.getColor()[0])
+	while int(currentColor) != int(color):
+		currentColor = (currentColor + 1) % 255
+		client.sendColor((currentColor, 255, 255))
+		time.sleep(0.03)
+
+def brightnessFade(client):
+	brightness = input("Enter target brightness: ")
+	currentBrightness = int(client.getBrightness())
+	while currentBrightness < int(brightness):
+		currentBrightness += 1
+		client.sendBrightness(currentBrightness)
+		time.sleep(0.03)
+	while currentBrightness > int(brightness):
+		currentBrightness -= 1
+		client.sendBrightness(currentBrightness)
+		time.sleep(0.03)
+
+def off(client):
+	currentBrightness = int(client.getBrightness())
+	while currentBrightness:
+		currentBrightness -= 1
+		client.sendBrightness(currentBrightness)
+		time.sleep(0.03)
 
 
 if __name__ == "__main__":

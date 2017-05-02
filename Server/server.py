@@ -141,31 +141,37 @@ def clientThread(clientSocket, lights):
 			break
 
 
+# Receives a color from the client
 def receiveColor(clientSocket):
 	logging.debug("Receiving color...")
 	data = list()
-	for i in range(3):
+	for i in range(3):	# Receives 3 3 digit numbers
 		data.append(clientSocket.recv(3).decode())
-	color = (data[0], data[1], data[2])
+	color = (data[0], data[1], data[2])	# Saves the color to a tuple
 	logging.debug("Received color " + str(color))
 	return color
 
 
+# Receives the information needed to start a random sequence
 def receiveRandom(clientSocket):
-	length = int(clientSocket.recv(2))
-	times = int(clientSocket.recv(length))
-	length = int(clientSocket.recv(2))
-	time = float(clientSocket.recv(length))
-	logging.debug("Received random with iterations " + str(times) + " and delay " + str(time))
-	return (times, time)
+	length = int(clientSocket.recv(2))		# Gets the length for number of times
+	times = int(clientSocket.recv(length))	# Number of times
+	length = int(clientSocket.recv(2))		# Gets the length for delay
+	delay = float(clientSocket.recv(length))# Gets the delay	
+	logging.debug("Received random with iterations " + str(times) + " and delay " + str(delay))
+	return (times, delay)
 
+
+# Reveives a individual pixel's data
 def receivePixel(lights, clientSocket):
 	logging.debug("Setting pixel")
-	pixel = int(clientSocket.recv(3))
-	color = receiveColor(clientSocket)
+	pixel = int(clientSocket.recv(3))	# Gets the pixel
+	color = receiveColor(clientSocket)	# Gets the color
 	logging.debug("Setting pixel " + str(pixel) + " to color " + str(color))
-	lights.setPixel(pixel, color)
+	lights.setPixel(pixel, color)		# Sets the pixel
 
+
+# 'Attempts' to set the entire strip individully
 def receiveStrip(lights, clientSocket):
 	strip = dict()
 	numPixles = int(clientSocket.recv(3))
@@ -194,6 +200,8 @@ def processCommands(lights, commands):
 def ensureSize(message, maximum, length):
 	if int(message) > maximum:
 		message = str(maximum)
+	if len(message) >= length:
+		message = message[:length]
 	while len(message) < length:
 		message = '0' + message
 	return message

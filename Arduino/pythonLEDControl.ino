@@ -7,6 +7,7 @@ bool setPixel();
 void setStrip();
 void getBrightness();
 CRGB getColors();
+unsigned getAudioMagnitude();
 
 FASTLED_USING_NAMESPACE
 
@@ -16,6 +17,9 @@ FASTLED_USING_NAMESPACE
 #define NUM_LEDS	300
 #define MAX_BRIGHTNESS	255
 CRGB leds[NUM_LEDS];
+
+const int sampleWindow = 50; // Sample window width in mS (50 mS = 20Hz)
+
 
 void setup() {
 	FastLED.addLeds<LED_TYPE,DATA_PIN,COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
@@ -34,8 +38,22 @@ void loop() {
 		setPixel();
 		FastLED.show();
 	}
-	else if (command == "SETSTRIP")
-		setStrip();
+	else if (command == "SETSTRIP") {
+		// unsigned avg[5];
+		while (true) {
+			FastLED.setBrightness(getAudioMagnitude());
+			FastLED.show();
+		// 	for (unsigned i = 0; i < 5; i++) {
+		// 		avg[i] = getAudioMagnitude();
+		// 		unsigned sum;
+		// 		for (unsigned j = 0; j < 5; j++) {
+		// 			sum += avg[j];
+		// 		}
+		// 		FastLED.setBrightness(sum / 5);
+		// 		FastLED.show();
+		// 	}
+		}
+	}
 }
 
 void setColor() {
@@ -111,5 +129,31 @@ bool listen(String& message) {
 	}
 }
 
-
-
+unsigned getAudioMagnitude() {
+	unsigned long startMillis= millis();  // Start of sample window
+	unsigned int peakToPeak = 0;   // peak-to-peak level
+	
+	unsigned int signalMax = 0;
+	unsigned int signalMin = 1024;
+	unsigned int sample;
+	
+	// collect data for 50 mS
+	while (millis() - startMillis < sampleWindow) {
+		sample = analogRead(0);
+		if (sample < 1024) { // toss out spurious readings 
+			if (sample > signalMax) {
+				signalMax = sample;  // save just the max levels
+			}
+			else if (sample < signalMin) {
+				signalMin = sample;  // save just the min levels
+			}
+		}
+	}
+	peakToPeak = signalMax - signalMin;  // max - min = peak-peak amplitude
+	int value = map(peakToPeak, 0, 1023, 0, 255);  // convert to value
+	Serial.println(value);
+	value -= 30;
+	if (value < 0)
+		return 0;
+	return value * 2;
+}

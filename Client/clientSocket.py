@@ -94,6 +94,8 @@ class clientSocket:
 		message = str(message)
 		if float(message) > maximum:
 			message = str(maximum)
+		if len(message) >= length:
+			message = message[:length]
 		while len(message) < length:
 			message = '0' + message
 		return message
