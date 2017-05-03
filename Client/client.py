@@ -13,6 +13,7 @@ import clientSocket
 ip = configs.server['ip']
 port = configs.server["port"]
 token = configs.login["token"]
+usr = configs.login["user"]
 
 def main():
     logging.basicConfig(level=logging.DEBUG, format='%(relativeCreated)6d %(threadName)s %(message)s')
@@ -21,7 +22,7 @@ def main():
     while True:
         command = input("Enter a command: ")
         command = command.strip().lower()
-        if command == "color-full":
+        if command == "colorful":
             color(client)
         if command == "color":
             color(client, hue=True)
@@ -61,6 +62,8 @@ def main():
 
 def authenticate(client):
     client.connect(ip, port)
+    client.send(client.ensureSize(len(usr), 999, 3))
+    client.send(usr)
     hasher = hashlib.sha256()
     hasher.update(token.encode())
     hashed = hasher.hexdigest()

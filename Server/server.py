@@ -12,11 +12,11 @@ ip = configs.server["ip"]
 port = configs.server["port"]
 
 def main(args):
-    # Creates an instance of the light strip class
-    lights = lightStrip.lightStrip()
     # Starts logging
     logging.basicConfig(level=logging.DEBUG, format='%(relativeCreated)6d %(threadName)s %(message)s')
-    logging.debug("Logging started...")
+    logging.info("Logging started...")
+    # Creates an instance of the light strip class
+    lights = lightStrip.lightStrip()
 
     # Starts the server
     serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -26,28 +26,34 @@ def main(args):
     listen(serverSocket, lights)
 
     # Closes the server
-    logging.debug("Closing the server...")
+    logging.info("Closing the server...")
     serverSocket.close()
 
 def start(serverSocket):
     # Attempts to open a socket on the requested location and port
-    logging.debug("Starting server")
-    try:
-        serverSocket.bind((ip, port))
-    except:
-        logging.debug("Error: Unable to start server at " + ip + " on port " + str(port))
-        logging.debug("Perhaps the server did not go down cleanly and the port hasn't been released?")
-        logging.debug("Exiting...")
-        sys.exit(1)
+    logging.info("Starting server")
+    for i in range(10):
+        try:
+            serverSocket.bind((ip, port))
+            break
+        except:
+            if i == 0:
+                logging.error("Error: Unable to start server at " + ip + " on port " + str(port))
+                logging.error("Perhaps the server did not go down cleanly and the port hasn't been released?")
+            elif i == 9:
+                logging.critical("Exiting...")
+                sys.exit(1)
+            logging.error("Trying again...")
+            time.sleep(1)
     # Success! 
-    logging.debug("Started server at " + ip + " on port " + str(port))
+    logging.info("Started server at " + ip + " on port " + str(port))
 
 def listen(serverSocket, lights):
     # Listens for up to 5 requests at a time
     serverSocket.listen(5)
     listening = True
-    clientThreads = list()
-    index = 0
+    clientThreads = list()  # Holds the created threads
+    index = 0   # Used for naming the threads
     while listening:
         clientSocket, address = serverSocket.accept()   # Listens for a new connection
         # Attempt to authenticate the user
@@ -63,24 +69,39 @@ def listen(serverSocket, lights):
 
 
 def authenticate(clientSocket):
-    logging.debug("New connection made, waiting for authentication...")
+    logging.info("New connection made, waiting for authentication...")
     # Sets a short timeout to force quick authentication 
     clientSocket.settimeout(4)
-    auth = ''
+    usr = str()
+    # try:    # Attempts to receive a 64 bit hash from the client
+    size = int(clientSocket.recv(3).decode())   # Gets username length
+    usr = clientSocket.recv(size).decode()
+    logging.debug("User is " + usr)
+    # except:
+        # pass
+    auth = str()
     try:    # Attempts to receive a 64 bit hash from the client
         auth = clientSocket.recv(64).decode()
+        logging.debug("Auth is " + auth)
     except:
         pass
 
     clientSocket.settimeout(None)
     # Uses sha256 hash
-    if auth != configs.accounts["admin"]:
-        logging.debug("Authenticaion failed.  Disconnecting user")
+    try:
+        if auth != configs.accounts[usr]:
+            logging.info("Authenticaion failed.  Disconnecting user")
+            send(0, clientSocket)   # Sends a 0, indicating a failed authentication
+            clientSocket.close()
+            return False
+    except KeyError:
+        logging.info("Authenticaion failed.  Disconnecting user")
         send(0, clientSocket)   # Sends a 0, indicating a failed authentication
         clientSocket.close()
         return False
+
     send(1, clientSocket)       # Sends a 1, indication a successful authentication
-    logging.debug("Authentication successful!")
+    logging.info("Authentication successful! User " + usr + " connected.")
     return True
 
 
