@@ -57,6 +57,8 @@ def main():
             brightnessFade(client)
         elif command == "off":
             off(client)
+        elif command == "on":
+            on(client)
 
 
 
@@ -114,7 +116,7 @@ def colorFade(client):
     while int(currentColor) != int(color):
         currentColor = (currentColor + 1) % 255
         client.sendColor((currentColor, 255, 255))
-        time.sleep(0.03)
+        time.sleep(2)
 
 def brightnessFade(client):
     brightness = input("Enter target brightness: ")
@@ -132,6 +134,13 @@ def off(client):
     currentBrightness = int(client.getBrightness())
     while currentBrightness:
         currentBrightness -= 1
+        client.sendBrightness(currentBrightness)
+        time.sleep(0.03)
+
+def on(client):
+    currentBrightness = int(client.getBrightness())
+    while currentBrightness <255:
+        currentBrightness += 1
         client.sendBrightness(currentBrightness)
         time.sleep(0.03)
 
