@@ -2,7 +2,6 @@
 import hashlib
 import logging
 import random
-import serial
 import sys
 import time
 

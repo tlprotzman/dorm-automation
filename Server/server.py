@@ -1,4 +1,5 @@
 #! /usr/bin/python3
+import json
 import logging
 import socket
 import sys
@@ -72,105 +73,124 @@ def authenticate(clientSocket):
     logging.info("New connection made, waiting for authentication...")
     # Sets a short timeout to force quick authentication 
     clientSocket.settimeout(4)
-    usr = str()
-    # try:    # Attempts to receive a 64 bit hash from the client
-    size = int(clientSocket.recv(3).decode())   # Gets username length
-    usr = clientSocket.recv(size).decode()
-    logging.debug("User is " + usr)
-    # except:
-        # pass
-    auth = str()
-    try:    # Attempts to receive a 64 bit hash from the client
-        auth = clientSocket.recv(64).decode()
-        logging.debug("Auth is " + auth)
-    except:
-        pass
-
+    message = receive(clientSocket)
+    usr = message["user"]
+    auth = message["token"]
     clientSocket.settimeout(None)
     # Uses sha256 hash
+    logging.debug("User is " + str(usr))
+    logging.debug("Auth is " + str(auth))
     try:
         if auth != configs.accounts[usr]:
-            logging.info("Authenticaion failed.  Disconnecting user")
-            send(0, clientSocket)   # Sends a 0, indicating a failed authentication
+            logging.info("Authenticaion failed.  Disconnecting user, 1")
+            _send(0, clientSocket)   # Sends a 0, indicating a failed authentication
             clientSocket.close()
             return False
     except KeyError:
-        logging.info("Authenticaion failed.  Disconnecting user")
-        send(0, clientSocket)   # Sends a 0, indicating a failed authentication
+        logging.info("Authenticaion failed.  Disconnecting user, 2")
+        _send(0, clientSocket)   # Sends a 0, indicating a failed authentication
         clientSocket.close()
         return False
 
-    send(1, clientSocket)       # Sends a 1, indication a successful authentication
+    _send(1, clientSocket)       # Sends a 1, indication a successful authentication
     logging.info("Authentication successful! User " + usr + " connected.")
     return True
 
 
+def send(obj):
+    payload = obj.dumps()
+    size = len(payload)
+    logging.info("Sending message of size " + size)
+    logging.debug("Sending " + payload)
+    size = ensureSize(size, 9999, 4)
+    _send(size)
+    _send(payload)
+    return
+
 # Sends a message to the client
-def send(message, client):
+def _send(message, client):
         totalSent = 0   # Tracks how much of the message has been sent
         message = str(message).encode() # Encodes the message as a utf-8
         while totalSent < len(message): # Continues sending while the message isn't fully set
             totalSent = client.send(message[totalSent:])    # Sends the remainder of the string
 
+def receive(clientSocket):
+    logging.debug("Waiting to receive message")
+    size = clientSocket.recv(4).decode()
+    logging.debug("Receiving message of size " + str(size))
+    data = clientSocket.recv(int(size)).decode()
+    logging.debug("Received " + data)
+    obj = json.loads(data)
+    logging.info("Received message from server")
+    logging.debug(str(obj))
+    return obj
+
 
 # Handles a single client, processing requests from it
 def clientThread(clientSocket, lights):
-    """
-    CODES:
-    0       Disconnect the client
-    1       Receive a color code
-    2       Receive a brightness
-    3       Request for current color
-    4       Request for current brightness
-    5       Starts a random sequence
-    6       Receives an individual pixel
-    """
 
     logging.debug("Started client socket thread for " + str(clientSocket))
     # Listens for a request from the client
     while True:
-        data = clientSocket.recv(1).decode()        # Receives the code for the desired command
-        logging.debug("received: " + str(data))
-        if data == "1":
-            color = receiveColor(clientSocket)
-            processCommands(lights, ("color", color))
-        elif data == "2":
-            brightness = clientSocket.recv(3).decode()
-            logging.debug("Received brightness " + str(brightness))
-            processCommands(lights, ("brightness", brightness))
-        elif data == "3":
-            logging.debug("Request for current color made")
-            for var in lights.getColor():
-                var = ensureSize(str(var), 255, 3)
-                send(var, clientSocket)
-        elif data == "4":
-            logging.debug("Request for current brightness made")
-            send(ensureSize(str(lights.getBrightness()), 255, 3), clientSocket)
-        elif data == "5":
-            logging.debug("Starting random sequence")
-            randomInfo = receiveRandom(clientSocket)
-            processCommands(lights, ("random", randomInfo))
-        elif data == "6":
-            logging.debug("Receiving individual pixel")
-            receivePixel(lights, clientSocket)
-        elif data == "7":
-            logging.debug("Receiving entire strip")
-            receiveStrip(lights, clientSocket)
-        if not data:
+        command = receive(clientSocket)
+        print(str(command))
+        if command["mode"] == "disconnect":
             logging.debug("Closing thread")
             clientSocket.close()
             break
+        elif command["mode"] == "solidcolor":
+            logging.debug("Receiving color...")
+            color = command["color"]
+            color = (color["h"], color["s"], color["v"])
+            logging.debug("Received color " + str(color))
+            lights.setColor(color)
+        elif command["mode"] == "brightness":
+            logging.debug("Receiving color...")
+            brightness = command["brightness"]
+            lights.setBrightness(brightness)    
+
+        # data = clientSocket.recv(1).decode()        # Receives the code for the desired command
+        # logging.debug("received: " + str(data))
+        # if data == "1":
+        #     color = receiveColor(clientSocket)
+        #     processCommands(lights, ("color", color))
+        # elif data == "2":
+        #     brightness = clientSocket.recv(3).decode()
+        #     logging.debug("Received brightness " + str(brightness))
+        #     processCommands(lights, ("brightness", brightness))
+        # elif data == "3":
+        #     logging.debug("Request for current color made")
+        #     for var in lights.getColor():
+        #         var = ensureSize(str(var), 255, 3)
+        #         send(var, clientSocket)
+        # elif data == "4":
+        #     logging.debug("Request for current brightness made")
+        #     send(ensureSize(str(lights.getBrightness()), 255, 3), clientSocket)
+        # elif data == "5":
+        #     logging.debug("Starting random sequence")
+        #     randomInfo = receiveRandom(clientSocket)
+        #     processCommands(lights, ("random", randomInfo))
+        # elif data == "6":
+        #     logging.debug("Receiving individual pixel")
+        #     receivePixel(lights, clientSocket)
+        # elif data == "7":
+        #     logging.debug("Receiving entire strip")
+        #     receiveStrip(lights, clientSocket)
+        # if not data:
+        #     logging.debug("Closing thread")
+        #     clientSocket.close()
+        #     break
 
 
 # Receives a color from the client
-def receiveColor(clientSocket):
-    logging.debug("Receiving color...")
-    data = list()
-    for i in range(3):  # Receives 3 3 digit numbers
-        data.append(clientSocket.recv(3).decode())
-    color = (data[0], data[1], data[2]) # Saves the color to a tuple
-    logging.debug("Received color " + str(color))
-    return color
+# def receiveColor(clientSocket):
+#     logging.debug("Receiving color...")
+#     data = list()
+#     for i in range(3):  # Receives 3 3 digit numbers
+#         data.append(clientSocket.recv(3).decode())
+#     color = (data[0], data[1], data[2]) # Saves the color to a tuple
+#     logging.debug("Received color " + str(color))
+#     return color
 
 
 # Receives the information needed to start a random sequence
