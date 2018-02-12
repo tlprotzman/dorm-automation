@@ -60,7 +60,7 @@ def color(client, hue=False):
     if not hue:
         newColor["s"] = numInput("Enter a S value: ", 255)
         newColor["v"] = numInput("Enter a V value: ", 255)
-    command = {"mode" : "solidColor", "color" : newColor}
+    command = {"mode" : "solidcolor", "color" : newColor}
     client.send(command)
     return
 
@@ -72,7 +72,7 @@ def colorFade(client):
         newColor["s"] = numInput("Enter a S value: ", 255)
         newColor["v"] = numInput("Enter a V value: ", 255)
     fadeTime = numInput("Enter fade time: ")
-    command = {"mode" : "solidColor", "color" : newColor,
+    command = {"mode" : "solidcolor", "color" : newColor,
                "fadeTime" : fadeTime}
     client.send(command)
     return
@@ -87,7 +87,7 @@ def brightness(client):
 def brightnessFade(client):
     targetBrightness = numInput("Enter target brightness: ", 255)
     fadeTime = numInput("Enter fade time: ")
-    command = {"mode" : "brightnesFfade", "brightness" = targetBrightness,
+    command = {"mode" : "brightnesFfade", "brightness" : targetBrightness,
                "fadeTime" : fadeTime}
     client.send(command)
     return
