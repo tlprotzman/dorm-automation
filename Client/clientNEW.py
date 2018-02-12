@@ -12,7 +12,7 @@ USER = configs.login["user"]
 TOKEN = configs.login["token"]
 
 def main():
-    logging.basicConfig(level=logging.DEBUG, format='%(relativeCreated)6d %(threadName)s %(message)s')
+    logging.basicConfig(level=logging.ERROR, format='%(relativeCreated)6d %(threadName)s %(message)s')
     client = clientSocket.ClientSocket()
     connect(client)
     while True:
@@ -24,7 +24,7 @@ def main():
             color(client)
         elif command == "color-fade":
             colorFade(client, hue=True)
-        elif command == "colorfuul-fade":
+        elif command == "colorful-fade":
             colorFade(client)
         elif command == "brightness":
             brightness(client)
