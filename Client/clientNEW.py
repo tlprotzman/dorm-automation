@@ -17,28 +17,34 @@ def main():
     connect(client)
     while True:
         command = input("Enter a command: ")
-        command = command.strip().lower()
-        if command == "color":
-            color(client, hue=True)
-        elif command == "colorful":
+        command = command.strip().lower().split()
+        if command[0] == "color":
+            if (len(command) == 2):
+                color(client, color=command[1])
+            else:
+                color(client, hue=True)
+        elif command[0] == "colorful":
             color(client)
-        elif command == "color-fade":
+        elif command[0] == "color-fade":
             colorFade(client, hue=True)
-        elif command == "colorful-fade":
+        elif command[0] == "colorful-fade":
             colorFade(client)
-        elif command == "brightness":
-            brightness(client)
-        elif command == "brightness-fade":
+        elif command[0] == "brightness":
+            if (len(command) == 2):
+                brightness(client, brightness=command[1])
+            else:
+                brightness(client, hue=True)
+        elif command[0] == "brightness-fade":
             brightnessFade(client)
-        elif command == "pulse":
+        elif command[0] == "pulse":
             pulse(client)
-        elif command == "rainbow":
+        elif command[0] == "rainbow":
             rainbow(client)
-        elif command == "on":
+        elif command[0] == "on":
             on(client)
-        elif command == "off":
+        elif command[0] == "off":
             off(client)
-        elif command == "exit":
+        elif command[0] == "exit":
             client.disconnect()
             sys.exit(0)
 
@@ -53,13 +59,17 @@ def connect(client):
     logging.info("Connected to server")
     return
 
-def color(client, hue=False):
+def color(client, color=None, hue=False):
     newColor = dict()
-    newColor["h"] = numInput("Enter a H value: ", 255)
-    newColor["s"] = newColor["v"] = 255
-    if not hue:
-        newColor["s"] = numInput("Enter a S value: ", 255)
-        newColor["v"] = numInput("Enter a V value: ", 255)
+    if (color):
+        newColor["h"] = color
+        newColor["s"] = newColor["v"] = 255
+    else:
+        newColor["h"] = numInput("Enter a H value: ", 255)
+        newColor["s"] = newColor["v"] = 255
+        if not hue:
+            newColor["s"] = numInput("Enter a S value: ", 255)
+            newColor["v"] = numInput("Enter a V value: ", 255)
     command = {"mode" : "solidcolor", "color" : newColor}
     client.send(command)
     return
@@ -78,8 +88,9 @@ def colorFade(client):
     return
 
 
-def brightness(client):
-    brightness = numInput("Enter brightness: ", 255)
+def brightness(client, brightness=None):
+    if (not brightness):
+        brightness = numInput("Enter brightness: ", 255)
     command = {"mode" : "brightness", "brightness" : brightness}
     client.send(command)
     return
