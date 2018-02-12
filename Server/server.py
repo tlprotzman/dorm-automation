@@ -139,15 +139,11 @@ def clientThread(clientSocket, lights):
             clientSocket.close()
             break
         elif command["mode"] == "solidcolor":
-            logging.debug("Receiving color...")
-            color = command["color"]
-            color = (color["h"], color["s"], color["v"])
-            logging.debug("Received color " + str(color))
-            lights.setColor(color)
+            setColor(command, lights)
         elif command["mode"] == "brightness":
-            logging.debug("Receiving color...")
-            brightness = command["brightness"]
-            lights.setBrightness(brightness)    
+            setBrightness(command, lights)
+        elif command["mode"] == "colorFade":
+            colorFade(command, lights)
 
         # data = clientSocket.recv(1).decode()        # Receives the code for the desired command
         # logging.debug("received: " + str(data))
@@ -181,6 +177,24 @@ def clientThread(clientSocket, lights):
         #     clientSocket.close()
         #     break
 
+def setColor(command, lights):
+    logging.debug("Receiving color...")
+    color = command["color"]
+    color = (color["h"], color["s"], color["v"])
+    logging.debug("Received color " + str(color))
+    lights.setColor(color)
+
+def colorFade(command, lights):
+    
+
+def setBrightness(command, lights):
+    logging.debug("Receiving color...")
+    brightness = command["brightness"]
+    lights.setBrightness(brightness)
+
+
+
+
 
 # Receives a color from the client
 # def receiveColor(clientSocket):
@@ -194,58 +208,58 @@ def clientThread(clientSocket, lights):
 
 
 # Receives the information needed to start a random sequence
-def receiveRandom(clientSocket):
-    length = int(clientSocket.recv(2))      # Gets the length for number of times
-    times = int(clientSocket.recv(length))  # Number of times
-    length = int(clientSocket.recv(2))      # Gets the length for delay
-    delay = float(clientSocket.recv(length))# Gets the delay    
-    logging.debug("Received random with iterations " + str(times) + " and delay " + str(delay))
-    return (times, delay)
+# def receiveRandom(clientSocket):
+#     length = int(clientSocket.recv(2))      # Gets the length for number of times
+#     times = int(clientSocket.recv(length))  # Number of times
+#     length = int(clientSocket.recv(2))      # Gets the length for delay
+#     delay = float(clientSocket.recv(length))# Gets the delay    
+#     logging.debug("Received random with iterations " + str(times) + " and delay " + str(delay))
+#     return (times, delay)
 
 
-# Reveives a individual pixel's data
-def receivePixel(lights, clientSocket):
-    logging.debug("Setting pixel")
-    pixel = int(clientSocket.recv(3))   # Gets the pixel
-    color = receiveColor(clientSocket)  # Gets the color
-    logging.debug("Setting pixel " + str(pixel) + " to color " + str(color))
-    lights.setPixel(pixel, color)       # Sets the pixel
+# # Reveives a individual pixel's data
+# def receivePixel(lights, clientSocket):
+#     logging.debug("Setting pixel")
+#     pixel = int(clientSocket.recv(3))   # Gets the pixel
+#     color = receiveColor(clientSocket)  # Gets the color
+#     logging.debug("Setting pixel " + str(pixel) + " to color " + str(color))
+#     lights.setPixel(pixel, color)       # Sets the pixel
 
 
-# 'Attempts' to set the entire strip individully
-def receiveStrip(lights, clientSocket):
-    strip = dict()
-    numPixles = int(clientSocket.recv(3))
-    logging.debug("Receiving " + str(numPixles) + " pixels")
-    for i in range(numPixles):
-        pixel = int(clientSocket.recv(3))
-        logging.debug("received pixel " + str(pixel))
-        color = receiveColor(clientSocket)
-        strip[pixel] = color
-        logging.debug("Pixel " + str(pixel) + " assigned to color " + str(color))
-    lights.sendStrand(strip)
+# # 'Attempts' to set the entire strip individully
+# def receiveStrip(lights, clientSocket):
+#     strip = dict()
+#     numPixles = int(clientSocket.recv(3))
+#     logging.debug("Receiving " + str(numPixles) + " pixels")
+#     for i in range(numPixles):
+#         pixel = int(clientSocket.recv(3))
+#         logging.debug("received pixel " + str(pixel))
+#         color = receiveColor(clientSocket)
+#         strip[pixel] = color
+#         logging.debug("Pixel " + str(pixel) + " assigned to color " + str(color))
+#     lights.sendStrand(strip)
 
-def processCommands(lights, commands):
-    if not commands:
-        logging.debug("ERROR: No command specified")
-        return
-    elif commands[0] == "color":
-        color = (commands[1][0], commands[1][1], commands[1][2])
-        lights.setColor(color)
-    elif commands[0] == "brightness":
-        lights.setBrightness(commands[1])
-    elif commands[0] == "random":
-        lights.randomColor(commands[1][0], commands[1][1])
+# def processCommands(lights, commands):
+#     if not commands:
+#         logging.debug("ERROR: No command specified")
+#         return
+#     elif commands[0] == "color":
+#         color = (commands[1][0], commands[1][1], commands[1][2])
+#         lights.setColor(color)
+#     elif commands[0] == "brightness":
+#         lights.setBrightness(commands[1])
+#     elif commands[0] == "random":
+#         lights.randomColor(commands[1][0], commands[1][1])
 
 
-def ensureSize(message, maximum, length):
-    if int(message) > maximum:
-        message = str(maximum)
-    if len(message) >= length:
-        message = message[:length]
-    while len(message) < length:
-        message = '0' + message
-    return message
+# def ensureSize(message, maximum, length):
+#     if int(message) > maximum:
+#         message = str(maximum)
+#     if len(message) >= length:
+#         message = message[:length]
+#     while len(message) < length:
+#         message = '0' + message
+#     return message
 
 
 if __name__ == "__main__":

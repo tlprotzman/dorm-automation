@@ -60,9 +60,23 @@ def color(client, hue=False):
     if not hue:
         newColor["s"] = numInput("Enter a S value: ", 255)
         newColor["v"] = numInput("Enter a V value: ", 255)
-    command = {"mode" : "solidcolor", "color" : newColor}
+    command = {"mode" : "solidColor", "color" : newColor}
     client.send(command)
     return
+
+def colorFade(client):
+    newColor = dict()
+    newColor["h"] = numInput("Enter a H value: ", 255)
+    newColor["s"] = newColor["v"] = 255
+    if not hue:
+        newColor["s"] = numInput("Enter a S value: ", 255)
+        newColor["v"] = numInput("Enter a V value: ", 255)
+    fadeTime = numInput("Enter fade time: ")
+    command = {"mode" : "solidColor", "color" : newColor,
+               "fadeTime" : fadeTime}
+    client.send(command)
+    return
+
 
 def brightness(client):
     brightness = numInput("Enter brightness: ", 255)
@@ -70,16 +84,25 @@ def brightness(client):
     client.send(command)
     return
 
-def numInput(string, maxVal):
+def brightnessFade(client):
+    targetBrightness = numInput("Enter target brightness: ", 255)
+    fadeTime = numInput("Enter fade time: ")
+    command = {"mode" : "brightnesFfade", "brightness" = targetBrightness,
+               "fadeTime" : fadeTime}
+    client.send(command)
+    return
+
+
+
+def numInput(string, maxVal=None):
     while True:
         data = input(string)
         try:
             data = int(data)
-            if data <= maxVal:
+            if maxVal is None or data <= maxVal:
                 return data
         except:
-            pass
-        print("Invalid number.")
+            print("Invalid number.")
 
 
 if __name__ == '__main__':
