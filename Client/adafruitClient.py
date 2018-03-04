@@ -105,15 +105,17 @@ def sendColor(client, h = 0, s = 255, v = 255):
     client.send({"mode":"solidcolor", "color":color})
 
 
-def tryConvertToInt(string, defaultValue = 0, min = 0, max = 255):
+def tryConvertToInt(string, defaultValue = 0, minVal = 0, maxVal = 255):
     try:
-        return max(min, min(max, int(string)))
+        val = int(string)
+        return max(minVal, min(maxVal, val))
     except ValueError:
         return defaultValue
 
-def tryConvertToFloat(string, defaultValue = 0, min = 0, max = 255):
+def tryConvertToFloat(string, defaultValue = 0, minVal = 0, maxVal = 255):
     try:
-        return max(min, min(max, float(string)))
+        val = float(string)
+        return max(minVal, min(maxVal, val))
     except ValueError:
         return defaultValue
 
