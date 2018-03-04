@@ -17,10 +17,10 @@ from Adafruit_IO import MQTTClient
 
 
 # Set to your Adafruit IO key & username below.
-ADAFRUIT_IO_KEY      = 'YOUR ADAFRUIT IO KEY'
-ADAFRUIT_IO_USERNAME = 'YOUR ADAFRUIT IO USERNAME'  # See https://accounts.adafruit.com
+ADAFRUIT_IO_KEY      = configs.adafruit["key"]
+ADAFRUIT_IO_USERNAME = configs.adafruit["username"]  # See https://accounts.adafruit.com
                                                     # to find your username.
-FEEDNAME = "feedname"
+FEEDNAME = configs.adafruit["feedname"]
 
 # these are loaded from the config file
 IP = configs.server["ip"]
