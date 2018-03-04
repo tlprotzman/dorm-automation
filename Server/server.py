@@ -33,7 +33,7 @@ def main(args):
 def start(serverSocket):
     # Attempts to open a socket on the requested location and port
     logging.info("Starting server")
-    for i in range(10):
+    for i in range(100):
         try:
             serverSocket.bind((ip, port))
             break
@@ -133,7 +133,7 @@ def clientThread(clientSocket, lights):
     # Listens for a request from the client
     while True:
         command = receive(clientSocket)
-        print(str(command))
+        #print(str(command))
         if command["mode"] == "disconnect":
             logging.debug("Closing thread")
             clientSocket.close()
@@ -185,7 +185,7 @@ def setColor(command, lights):
     lights.setColor(color)
 
 def colorFade(command, lights):
-    
+    pass
 
 def setBrightness(command, lights):
     logging.debug("Receiving color...")
