@@ -63,15 +63,59 @@ def message(client, feed_id, payload):
     # Message function will be called when a subscribed feed has a new value.
     # The feed_id parameter identifies the feed, and the payload parameter has
     # the new value.
-    if (payload == "On"):
-        # turn the lights on
-        lightSocket.send({"mode":"brightness", "brightness":255})
-    elif (payload == "Off"):
-        # turn the lights off
-        lightSocket.send({"mode":"brightness", "brightness":0})
+    words = payload.split(" ")
+    if len(words) == 1:
+        if (payload.lower() == "on"):
+            # turn the lights on
+            lightSocket.send({"mode":"brightness", "brightness":255})
+        elif (payload.lower() == "off"):
+            # turn the lights off
+            lightSocket.send({"mode":"brightness", "brightness":0})
+        elif (payload.lower() == "flash"):
+            # this is just for testing
+            lightSocket.send({"mode":"brightness", "brightness":0})
+            lightSocket.send({"mode":"brightness", "brightness":255})
+            lightSocket.send({"mode":"brightness", "brightness":0})
+    elif len(words) == 2:
+        if (words[0].lower() == "brightnessvalue"):
+            value = tryConvertToInt(words[1])
+            lightSocket.send({"mode":"brightness", "brightness":value})
+        elif (words[0].lower() == "brightnesspercent"):
+            percent = tryConvertToFloat(words[1], 0, 0, 100)
+            value = int(percent*255/100)
+            lightSocket.send({"mode":"brightness", "brightness":value})
+        elif (words[0].lower() == "color"):
+            # then have a bunch of presets I guess
+            colors = {"red":(0, 255, 255), "green":(96, 255, 255), "blue":(164, 255, 255), "purple":(196, 255, 255), "white":(0, 0, 255), "yellow":(54, 255, 255), "pink":(225, 255, 255), "teal":(126, 255, 255), "orange":(23, 213, 255)}
+            if (words[1].lower() in colors):
+                sendColor(client, *colors[words[1].lower()])
+        elif (words[0].lower() == "colorvalue"):
+            hue = tryConvertToInt(words[1])
+            sendColor(client, hue)
+    elif len(words) == 4:
+        if (words[0].lower() == "colorful"):
+            h = tryConvertToInt(words[1])
+            s = tryConvertToInt(words[2])
+            v = tryConvertToInt(words[3])
+            sendColor(client, h, s, v)
     #print('Feed {0} received new value: {1}'.format(feed_id, payload))
 
+def sendColor(client, h = 0, s = 255, v = 255):
+    color = {"h":h, "s":s, "v":v}
+    client.send({"mode":"solidcolor", "color":color})
 
+
+def tryConvertToInt(string, defaultValue = 0, min = 0, max = 255):
+    try:
+        return max(min, min(max, int(string)))
+    except ValueError:
+        return defaultValue
+
+def tryConvertToFloat(string, defaultValue = 0, min = 0, max = 255):
+    try:
+        return max(min, min(max, float(string)))
+    except ValueError:
+        return defaultValue
 
 # Create an MQTT client instance.
 client = MQTTClient(ADAFRUIT_IO_USERNAME, ADAFRUIT_IO_KEY)
