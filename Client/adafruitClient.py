@@ -98,7 +98,7 @@ def message(client, feed_id, payload):
             s = tryConvertToInt(words[2])
             v = tryConvertToInt(words[3])
             sendColor(lightSocket, h, s, v)
-    #print('Feed {0} received new value: {1}'.format(feed_id, payload))
+    print('Feed {0} received new value: {1}'.format(feed_id, payload))
 
 def sendColor(client, h = 0, s = 255, v = 255):
     color = {"h":h, "s":s, "v":v}

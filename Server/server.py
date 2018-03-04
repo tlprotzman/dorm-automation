@@ -190,9 +190,9 @@ def colorFade(command, lights):
 def setBrightness(command, lights):
     logging.debug("Receiving color...")
     brightness = command["brightness"]
-    while (lights.brightness < brightness):
+    while (lights.brightness < int(brightness)):
         lights.setBrightness(lights.brightness + 1)
-    while (lights.brightness > brightness):
+    while (lights.brightness > int(brightness)):
         lights.setBrightness(lights.brightness - 1)
 
 
