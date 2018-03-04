@@ -29,6 +29,17 @@ USER = configs.login["user"]
 TOKEN = configs.login["token"]
 
 
+# this is code just taken from Tristan to connect to the server
+def connectToLights(client):
+    # logging.debug("Connecting...")
+    client.connect(IP, PORT)
+    # logging.debug("Authenticating...")
+    client.authenticate(USER, TOKEN)
+    # logging.debug("Verifying...")
+    client.verifyConnected()
+    # logging.info("Connected to server")
+    return
+
 lightSocket = clientSocket.ClientSocket()
 connectToLights(lightSocket)
 #lightSocket.send({"mode":"brightness", "brightness":0})
@@ -60,18 +71,6 @@ def message(client, feed_id, payload):
         lightSocket.send({"mode":"brightness", "brightness":0})
     #print('Feed {0} received new value: {1}'.format(feed_id, payload))
 
-
-
-# this is code just taken from Tristan to connect to the server
-def connectToLights(client):
-    # logging.debug("Connecting...")
-    client.connect(IP, PORT)
-    # logging.debug("Authenticating...")
-    client.authenticate(USER, TOKEN)
-    # logging.debug("Verifying...")
-    client.verifyConnected()
-    # logging.info("Connected to server")
-    return
 
 
 # Create an MQTT client instance.
