@@ -63,9 +63,8 @@ save a bunch of files that each have a preset in them, but only show the preset 
 what if I make the colorpicker/intpicker pages a class which I pass in the place to save it? so I just create a bunch of them for making a patern?
 that way they save their states...
 """
-
-colorWheelFilename = "colorwheel.png"
-sliderImage = "slider.png"
+dir_path = os.path.dirname(os.path.realpath(__file__))
+colorWheelFilename = dir_path + "/colorwheel.png"
 colorWheelRadius = 100 # this is used to calculate the color that was clicked on. I may need to generate this depending on the size of the screen, but whatever...
 
 class Page(tk.Frame):
