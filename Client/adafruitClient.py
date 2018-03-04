@@ -52,10 +52,10 @@ def message(client, feed_id, payload):
     # Message function will be called when a subscribed feed has a new value.
     # The feed_id parameter identifies the feed, and the payload parameter has
     # the new value.
-    if (payload.value == "on"):
+    if (payload.value == "On"):
         # turn the lights on
         lightSocket.send({"mode":"brightness", "brightness":255})
-    elif (payload.value == "off"):
+    elif (payload.value == "Off"):
         # turn the lights off
         lightSocket.send({"mode":"brightness", "brightness":0})
     #print('Feed {0} received new value: {1}'.format(feed_id, payload))
