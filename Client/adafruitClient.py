@@ -88,16 +88,16 @@ def message(client, feed_id, payload):
             # then have a bunch of presets I guess
             colors = {"red":(0, 255, 255), "green":(96, 255, 255), "blue":(164, 255, 255), "purple":(196, 255, 255), "white":(0, 0, 255), "yellow":(54, 255, 255), "pink":(225, 255, 255), "teal":(126, 255, 255), "orange":(23, 213, 255)}
             if (words[1].lower() in colors):
-                sendColor(client, *colors[words[1].lower()])
+                sendColor(lightSocket, *colors[words[1].lower()])
         elif (words[0].lower() == "colorvalue"):
             hue = tryConvertToInt(words[1])
-            sendColor(client, hue)
+            sendColor(lightSocket, hue)
     elif len(words) == 4:
         if (words[0].lower() == "colorful"):
             h = tryConvertToInt(words[1])
             s = tryConvertToInt(words[2])
             v = tryConvertToInt(words[3])
-            sendColor(client, h, s, v)
+            sendColor(lightSocket, h, s, v)
     #print('Feed {0} received new value: {1}'.format(feed_id, payload))
 
 def sendColor(client, h = 0, s = 255, v = 255):
