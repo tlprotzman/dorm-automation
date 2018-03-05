@@ -140,10 +140,12 @@ def clientThread(clientSocket, lights):
             break
         elif command["mode"] == "solidcolor":
             setColor(command, lights)
-        elif command["mode"] == "brightness":
-            setBrightness(command, lights)
         elif command["mode"] == "colorFade":
             colorFade(command, lights)
+        elif command["mode"] == "brightness":
+            setBrightness(command, lights)
+        elif command["mode"] == "brightnessFade":
+            setBrightness(command, lights)
 
         # data = clientSocket.recv(1).decode()        # Receives the code for the desired command
         # logging.debug("received: " + str(data))
@@ -185,15 +187,40 @@ def setColor(command, lights):
     lights.setColor(color)
 
 def colorFade(command, lights):
-    pass
+    logging.debug("Receiving color...")
+    target = command["color"]
+    target = list(target["h"], target["s"], target["v"])
+    logging.debug("Received color " + str(target))
+    
+    current = ligths.getColor()
+    current = list(current["h"], current["s"], current["v"])
+    while (current != target):
+        for i in range(1, 3):           # Adjust S and V
+            if (current[i] < target[i]):
+                current[i] += 1
+            elif (current[i] > target[i]):
+                current[i] -= 1
+        if (target[0] != current[0]):
+            if ((target[0] - current[0] + 256) % 256 < 128):
+                current[0] += 1
+            else:
+                current[0] -= 1
+        lights.setColor(current)
+
+
 
 def setBrightness(command, lights):
     logging.debug("Receiving color...")
     brightness = command["brightness"]
-    while (lights.brightness < int(brightness)):
-        lights.setBrightness(lights.brightness + 1)
-    while (lights.brightness > int(brightness)):
-        lights.setBrightness(lights.brightness - 1)
+    lights.setBrightness(brightness)
+
+def brightnessFade(command, lights)
+    logging.debug("Receiving color...")
+    brightness = command["brightness"]
+    while (lights.getBrightness() < int(brightness)):
+        lights.setBrightness(lights.getBrightness() + 1)
+    while (lights.getBrightness() > int(brightness)):
+        lights.setBrightness(lights.getBrightness() - 1)
 
 
 
