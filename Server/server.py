@@ -139,13 +139,13 @@ def clientThread(clientSocket, lights):
             clientSocket.close()
             break
         elif command["mode"] == "solidcolor":
-            setColor(command, lights)
+            colorFade(command, lights)
         elif command["mode"] == "colorFade":
             colorFade(command, lights)
         elif command["mode"] == "brightness":
-            setBrightness(command, lights)
+            brightnessFade(command, lights)
         elif command["mode"] == "brightnessFade":
-            setBrightness(command, lights)
+            brightnessFade(command, lights)
 
         # data = clientSocket.recv(1).decode()        # Receives the code for the desired command
         # logging.debug("received: " + str(data))
@@ -214,7 +214,7 @@ def setBrightness(command, lights):
     brightness = command["brightness"]
     lights.setBrightness(brightness)
 
-def brightnessFade(command, lights)
+def brightnessFade(command, lights):
     logging.debug("Receiving color...")
     brightness = command["brightness"]
     while (lights.getBrightness() < int(brightness)):
